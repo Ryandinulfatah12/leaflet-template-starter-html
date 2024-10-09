@@ -9,22 +9,25 @@
     <style>
         body, html {
             height: 100%;
+            padding: 0;
             margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
         }
         #map {
-            display: none; /* Sembunyikan peta sebelum pencarian */
+            display: none;
             height: 100vh;
         }
         #search-container {
             position: absolute;
-            top: 10px;
+            top: 44px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 1000;
             background-color: white;
             padding: 10px;
             text-decoration: none;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border: none;
+            box-shadow: 0 0 15px rgba(0, 101, 244, 0.2);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -32,7 +35,9 @@
         }
         #search-input {
             border: none;
+            text-decoration: none;
             width: 300px;
+            box-shadow: none;
             padding: 5px;
             font-size: 16px;
         }
@@ -45,24 +50,81 @@
             margin-left: 10px;
         }
         #search-input:focus {
-            outline: none; /* Hilangkan outline saat tombol diklik */
+            outline: none;
+            border: none;
+            box-shadow: none;
+        }
+        #search-input:not(:placeholder-shown) {
+            outline: none;
+            box-shadow: none;
+            border: none;
         }
 
         #search-button:hover {
-            background-color: #e0e0e0; /* Warna latar belakang berubah saat hover */
+            background-color: #e0e0e0;
         }
+
+        .container-add-location {
+            z-index: 1001;
+            position: fixed;
+            bottom: 0px;
+            margin: 0;
+            width: 100%;
+            background-color: #1D5DCC;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+        }
+
+        #location-choosed {
+            color: white;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%; /* Full width untuk teks juga */
+        }
+
+        #add-location {
+            background-color: white;
+            color: #1D5DCC;
+            padding: 10px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-sizing: border-box; /* Pastikan padding tidak melebihi lebar */
+        }
+
+
     </style>
 </head>
 <body>
 
     <!-- Input untuk pencarian tempat -->
     <div id="search-container">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 24 24">
             <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/>
             <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
         </svg>
         <input type="text" id="search-input" placeholder="Input Tujuan Anda..." />
         <button id="search-button">Cari</button>
+    </div>
+
+    <div class="container-add-location">
+        <div class="flex">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#fff" class="bi bi-geo-alt" viewBox="0 0 16 16">
+                <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/>
+                <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+            </svg>
+            <div id="location-choosed"></div>
+        </div>
+        <button id="add-location">Tambahkan</button>
     </div>
 
     <!-- Div untuk menampilkan peta -->
@@ -74,6 +136,7 @@
         var map;
         var searchButton = document.getElementById('search-button');
         var searchInput = document.getElementById('search-input');
+        var textDisplayChoosed = document.getElementById('location-choosed');
         var geocoder = L.Control.Geocoder.nominatim(); // Menggunakan Nominatim untuk pencarian tempat
         var marker; // Variabel untuk menyimpan marker
 
@@ -113,8 +176,25 @@
                     .openPopup();
 
                 // Tampilkan alert dengan koordinat lokasi yang diklik
-                alert("Anda mengklik lokasi dengan koordinat: " + latlng.lat + ", " + latlng.lng);
+                // Panggil fungsi reverse geocoding untuk mendapatkan nama daerah
+                reverseGeocode(latlng.lat, latlng.lng);
+
+                // alert("Anda mengklik lokasi dengan koordinat: " + latlng.lat + ", " + latlng.lng);
             });
+        }
+
+        function reverseGeocode(lat, lng) {
+            var url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    var address = data.display_name; // Nama daerah yang ditemukan
+                    textDisplayChoosed.innerText = address + ` (${lat}, ${lng})`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         }
 
         // Fungsi ketika tombol cari ditekan
