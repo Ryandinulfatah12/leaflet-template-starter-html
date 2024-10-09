@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencarian Lokasi dengan Klik Pin</title>
+    <link rel="stylesheet" href="/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            display: none; /* Sembunyikan peta sebelum pencarian */
+            height: 100vh;
+        }
+        #search-container {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background-color: white;
+            padding: 10px;
+            text-decoration: none;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 14px;
+        }
+        #search-input {
+            border: none;
+            width: 300px;
+            padding: 5px;
+            font-size: 16px;
+        }
+        #search-button {
+            border-radius: 4px;
+            padding: 12px;
+            border: none;
+            padding: 5px 10px;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+        #search-input:focus {
+            outline: none; /* Hilangkan outline saat tombol diklik */
+        }
+
+        #search-button:hover {
+            background-color: #e0e0e0; /* Warna latar belakang berubah saat hover */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Input untuk pencarian tempat -->
+    <div id="search-container">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
+            <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/>
+            <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+        </svg>
+        <input type="text" id="search-input" placeholder="Input Tujuan Anda..." />
+        <button id="search-button">Cari</button>
+    </div>
+
+    <!-- Div untuk menampilkan peta -->
+    <div id="map"></div>
+
+    <script src="/leaflet/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script>
+        var map;
+        var searchButton = document.getElementById('search-button');
+        var searchInput = document.getElementById('search-input');
+        var geocoder = L.Control.Geocoder.nominatim(); // Menggunakan Nominatim untuk pencarian tempat
+        var marker; // Variabel untuk menyimpan marker
+
+        // Fungsi untuk menampilkan peta dan tempat yang dicari
+        function showMap(lat, lng, placeName) {
+            // Tampilkan peta setelah pencarian
+            document.getElementById('map').style.display = 'block';
+
+            // Inisialisasi peta
+            if (map) {
+                map.remove(); // Hapus peta sebelumnya jika ada pencarian baru
+            }
+            map = L.map('map').setView([lat, lng], 13);
+
+            // Menambahkan tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19
+            }).addTo(map);
+
+            // Tambahkan marker ke tempat yang dicari
+            marker = L.marker([lat, lng]).addTo(map)
+                .bindPopup(placeName)
+                .openPopup();
+
+            // Event click pada peta untuk menambahkan marker di lokasi klik
+            map.on('click', function(e) {
+                var latlng = e.latlng;
+
+                // Hapus marker lama jika ada
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+
+                // Tambahkan marker baru di lokasi yang diklik
+                marker = L.marker([latlng.lat, latlng.lng]).addTo(map)
+                    .bindPopup("Koordinat: " + latlng.lat + ", " + latlng.lng)
+                    .openPopup();
+
+                // Tampilkan alert dengan koordinat lokasi yang diklik
+                alert("Anda mengklik lokasi dengan koordinat: " + latlng.lat + ", " + latlng.lng);
+            });
+        }
+
+        // Fungsi ketika tombol cari ditekan
+        searchButton.addEventListener('click', function() {
+            var place = searchInput.value.trim();
+
+            // Pastikan input tidak kosong
+            if (place !== '') {
+                // Gunakan geocoder untuk mencari lokasi berdasarkan nama tempat
+                geocoder.geocode(place, function(results) {
+                    if (results && results.length > 0) {
+                        var latlng = results[0].center;
+                        var placeName = results[0].name;
+                        showMap(latlng.lat, latlng.lng, placeName);
+                        // document.getElementById('search-container').style.display = 'none'; // Sembunyikan input setelah pencarian
+                    } else {
+                        alert('Tempat tidak ditemukan. Coba lagi dengan nama yang berbeda.');
+                    }
+                });
+            } else {
+                alert('Masukkan nama tempat terlebih dahulu.');
+            }
+        });
+    </script>
+
+</body>
+</html>
