@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Travel Feedback Form</title>
+    <style>
+      body {
+        font-family: Arial;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        padding: 30px;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+
+      .user-info {
+        margin-bottom: 15px;
+      }
+
+      .user-info img {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .user-info h2 {
+        font-size: 18px;
+        margin: 10px 0 5px 0;
+      }
+
+      .user-info p {
+        color: #a0a0a0;
+        font-size: 14px;
+      }
+
+      .stars {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+
+      .stars i {
+        font-size: 32px;
+        color: #ffd700;
+        margin: 0 5px;
+      }
+
+      .tags .options-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+      }
+
+      .tags label {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: #e7e2e2;
+        border-radius: 20px;
+        color: #000000;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      /* Change background and text color on hover */
+      .tags label:hover {
+        background-color: #357abf;
+        color: #ffffff;
+      }
+
+      /* Hide checkbox */
+      .tags input[type="checkbox"] {
+        display: none;
+      }
+
+      /* Style span when checkbox is checked */
+      .tags input[type="checkbox"]:checked + span {
+        background-color: #2e5b9b;
+        color: #ffffff;
+        border-radius: 20px;
+      }
+
+      #comment-container {
+        margin-bottom: 20px;
+        align-items: center;
+        display: block;
+      }
+
+      textarea {
+        width: 80%;
+        height: 100px;
+        padding: 15px;
+        border-radius: 15px;
+        border: 1px solid #dcdcdc;
+        font-size: 14px;
+        color: #a0a0a0;
+      }
+
+      .submit-button {
+        background-color: #3d7eff;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 15px 40%;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .submit-button:hover {
+        background-color: #316ad5;
+      }
+
+      .star {
+        font-size: 7vh;
+        cursor: pointer;
+      }
+
+      .one {
+        color: rgb(255, 0, 0);
+      }
+
+      .two {
+        color: rgb(255, 106, 0);
+      }
+
+      .three {
+        color: rgb(206, 210, 92);
+      }
+
+      .four {
+        color: rgb(186, 186, 71);
+      }
+
+      .five {
+        color: rgb(24, 159, 14);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Bagaimana perjalanan Anda?</h1>
+
+      <div class="user-info">
+        <img
+          src="https://ui-avatars.com/api/?name=John+Doe"
+          alt="User Avatar"
+        />
+        <h2>Abdi Baya Dirgantara</h2>
+        <p>Perjalanan tanggal 5 September 2024 Pukul 15:00:21</p>
+      </div>
+
+      <div class="stars">
+        <span onclick="gfg(1)" class="star">★ </span>
+        <span onclick="gfg(2)" class="star">★ </span>
+        <span onclick="gfg(3)" class="star">★ </span>
+        <span onclick="gfg(4)" class="star">★ </span>
+        <span onclick="gfg(5)" class="star">★ </span>
+      </div>
+      <h3 id="output">Rating kamu: 0/5</h3>
+
+      <div id="comment-container">
+        <div class="tags">
+          <div class="options-grid">
+            <label>
+              <input
+                type="checkbox"
+                name="review_tags[]"
+                value="Waktu penjemputan"
+              />
+              <span>Waktu penjemputan</span>
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                name="review_tags[]"
+                value="Pemilihan rute"
+              />
+              <span>Pemilihan rsute</span>
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                name="review_tags[]"
+                value="Keamanan mengemudi"
+              />
+              <span>Keamanan mengemudi</span>
+            </label>
+            <label>
+              <input type="checkbox" name="review_tags[]" value="Kebersihan" />
+              <span>Kebersihan</span>
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                name="review_tags[]"
+                value="Sikap driver"
+              />
+              <span>Sikap driver</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <textarea placeholder="Berikan penjelasan kamu disini"></textarea>
+      <div class="comment-box"></div>
+
+      <button class="submit-button">Kirim</button>
+    </div>
+  </body>
+  <script>
+    let stars = document.getElementsByClassName("star");
+    let output = document.getElementById("output");
+    let commentContainer = document.getElementById("comment-container");
+
+    document.addEventListener("DOMContentLoaded", (event) => {
+      // commentContainer.style.display = "none";
+    });
+
+    // Funtion to update rating
+    function gfg(n) {
+      remove();
+      for (let i = 0; i < n; i++) {
+        if (n == 1) cls = "one";
+        else if (n == 2) cls = "two";
+        else if (n == 3) cls = "three";
+        else if (n == 4) cls = "four";
+        else if (n == 5) cls = "five";
+        stars[i].className = "star " + cls;
+      }
+      output.innerText = "Rating kamu: " + n + "/5";
+
+      if (n > 0) {
+        commentContainer.style.display = "block";
+      } else {
+        commentContainer.style.display = "none";
+      }
+    }
+
+    // To remove the pre-applied styling
+    function remove() {
+      let i = 0;
+      while (i < 5) {
+        stars[i].className = "star";
+        i++;
+      }
+    }
+  </script>
+</html>

@@ -1,262 +1,389 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pencarian Lokasi dengan Klik Pin</title>
-    <link rel="stylesheet" href="https://tiles.locationiq.com/v3/libs/openlayers/8.2.0/ol.css" type="text/css">
+    <link
+      rel="stylesheet"
+      href="https://tiles.locationiq.com/v3/libs/openlayers/8.2.0/ol.css"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.2/font/bootstrap-icons.min.css"
+    />
     <script src="https://tiles.locationiq.com/v3/libs/openlayers/8.2.0/ol.js"></script>
-    
     <style>
-        body, html {
-            height: 100%;
-            padding: 0;
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-        #map {
-            /* display: none; */
-            width: 100%;
-            height: 100vh;
-        }
-        #search-container {
-            position: absolute;
-            top: 44px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background-color: white;
-            padding: 10px;
-            text-decoration: none;
-            border: none;
-            box-shadow: 0 0 15px rgba(0, 101, 244, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 14px;
-        }
-        #search-input {
-            border: none;
-            text-decoration: none;
-            width: 300px;
-            box-shadow: none;
-            padding: 5px;
-            font-size: 16px;
-        }
-        #search-button {
-            border-radius: 4px;
-            padding: 12px;
-            border: none;
-            padding: 5px 10px;
-            font-size: 16px;
-            margin-left: 10px;
-        }
-        #search-input:focus {
-            outline: none;
-            border: none;
-            box-shadow: none;
-        }
-        #search-input:not(:placeholder-shown) {
-            outline: none;
-            box-shadow: none;
-            border: none;
-        }
+      body,
+      html {
+        height: 100%;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      .root-container {
+        position: relative;
+        width: 100%;
+      }
+      #map {
+        width: 100%;
+        height: 100vh;
+      }
+      .search-container {
+        left: 24px;
+        right: 24px;
+        position: absolute;
+        top: 24px;
+        z-index: 1000;
+        background-color: white;
+        padding: 10px;
+        text-decoration: none;
+        border: none;
+        display: block;
+        justify-content: center;
+        align-items: center;
+        border-radius: 14px;
+      }
+      .search-input {
+        border: none;
+        padding: 14px;
+        font-size: 16px;
+      }
+      .search-button {
+        border-radius: 4px;
+        padding: 12px;
+        border: none;
+        padding: 14px 10px;
+        background-color: #1d5dcc;
+        color: white;
+        font-size: 16px;
+        display: block;
+        width: 100%;
+      }
 
-        #search-button:hover {
-            background-color: #e0e0e0;
-        }
+      .search-button:hover {
+        background-color: #e0e0e0;
+      }
 
-        .container-add-location {
-            z-index: 1001;
-            position: fixed;
-            bottom: 0px;
-            margin: 0;
-            width: 100%;
-            background-color: #1D5DCC;
-            padding: 10px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-        }
+      .pinpoint {
+        align-items: center;
+      }
 
-        #location-choosed {
-            color: white;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%; /* Full width untuk teks juga */
-        }
+      .container-add-location {
+        z-index: 1001;
+        position: fixed;
+        bottom: 0px;
+        margin: 0;
+        width: 100%;
+        background-color: #1d5dcc;
+        padding: 10px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
 
-        #add-location {
-            background-color: white;
-            color: #1D5DCC;
-            padding: 10px;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-            box-sizing: border-box; /* Pastikan padding tidak melebihi lebar */
-        }
-        #autocomplete-results {
-            position: absolute;
-            top: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1001;
-            background-color: white;
-            width: 320px;
-            box-shadow: 0 0 15px rgba(0, 101, 244, 0.2);
-            border-radius: 5px;
-            display: none;
-            flex-direction: column;
-        }
+      #location-choosed {
+        color: white;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%; /* Full width untuk teks juga */
+      }
 
-        .autocomplete-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-        }
+      #directions-result {
+        position: absolute;
+        background-color: white;
+        color: #1d5dcc;
+        padding: 10px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
 
-        .autocomplete-item:hover {
-            background-color: #f0f0f0;
-        }
+        box-sizing: border-box; /* Pastikan padding tidak melebihi lebar */
+      }
+      .autocomplete-results {
+        /* border: 1px solid #ccc; */
+        background-color: #fff;
+        position: absolute;
+        z-index: 1000;
+        max-height: 150px;
+        overflow-y: auto;
+      }
+      .autocomplete-item {
+        padding: 8px;
+        cursor: pointer;
+      }
+      .autocomplete-item:hover {
+        background-color: #f0f0f0;
+      }
 
+      .search-item {
+        align-items: center;
+      }
+      .icon-blue {
+        color: #1d5dcc; /* Change icon color to blue */
+      }
+      .search-input:focus {
+        outline: none; /* Remove the default focus outline */
+        border: none; /* Remove the border on focus */
+      }
     </style>
-</head>
-<body>
-
-    <!-- Input untuk pencarian tempat -->
-    <div id="search-container">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 24 24">
-            <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/>
-            <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-        </svg>
-        <input type="text" id="search-input" placeholder="Input Tujuan Anda..." autocomplete="off"/>
-        <button id="search-button">Cari</button>
-    </div>
-
-    <div class="container-add-location">
-        <div class="flex">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#fff" class="bi bi-geo-alt" viewBox="0 0 16 16">
-                <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/>
-                <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-            </svg>
-            <div id="location-choosed"></div>
+  </head>
+  <body>
+    <div class="root-container">
+      <div class="search-container">
+        <div class="pinpoint search-item">
+          <i class="bi bi-geo-alt-fill icon-blue"></i>
+          <input
+            type="text"
+            id="pinpoint-input"
+            placeholder="Input Pinpoint..."
+            autocomplete="off"
+            class="search-input search-item"
+          />
+          <div
+            id="pinpoint-autocomplete-results"
+            class="autocomplete-results"
+          ></div>
         </div>
-        <button id="add-location">Tambahkan</button>
+
+        <div class="destionation">
+          <i class="bi bi-geo-alt-fill icon-blue"></i>
+
+          <input
+            type="text"
+            id="destination-input"
+            placeholder="Input Destination..."
+            autocomplete="off"
+            class="search-input"
+          />
+          <div
+            id="destination-autocomplete-results"
+            class="autocomplete-results"
+          ></div>
+        </div>
+        <button id="get-directions" class="search-button">Periksa Rute</button>
+      </div>
+
+      <div id="map" style="width: 100%; height: 100vh"></div>
+      <div id="directions-result"></div>
     </div>
 
-    <!-- Div untuk menampilkan peta -->
-    <div id="map"></div>
-    <div id="autocomplete-results"></div>
-    <div id="result"></div>
-
-    <script src="https://tiles.locationiq.com/v3/libs/olms/12.0.0/olms.js" type="text/javascript"></script>
+    <script
+      src="https://tiles.locationiq.com/v3/libs/olms/12.0.0/olms.js"
+      type="text/javascript"
+    ></script>
     <script>
-        const apiKey = 'pk.f8ee01883fc60539489f3a8f9a6f0b6b';
-        const mapKey = 'pk.aa7f5d0539c5675b7f3429402939d8fa';
-        const searchInput = document.getElementById('search-input');
-        const searchButton = document.getElementById('search-button');
-        const autocompleteResults = document.getElementById('autocomplete-results');
-        const resultDiv = document.getElementById('result');
-        const mapDiv = document.getElementById('map');
+      const apiKey = "pk.f8ee01883fc60539489f3a8f9a6f0b6b";
+      const mapKey = "pk.aa7f5d0539c5675b7f3429402939d8fa";
 
-        var styleJson = 'https://tiles-staging.locationiq.com/v3/streets/vector.json?key=' + mapKey;
+      const pinpointInput = document.getElementById("pinpoint-input");
+      const destinationInput = document.getElementById("destination-input");
+      const directionButton = document.getElementById("get-directions");
+      const directionsResult = document.getElementById("directions-result");
+      const pinpointAutocompleteResults = document.getElementById(
+        "pinpoint-autocomplete-results"
+      );
+      const destinationAutocompleteResults = document.getElementById(
+        "destination-autocomplete-results"
+      );
 
-        const map = new ol.Map({
-            target: 'map',
-            view: new ol.View({
-                center: ol.proj.fromLonLat([106.84513, -6.21462]), // Koordinat Jakarta
-                zoom: 12
-            })
-        });
+      var styleJson = `https://tiles-staging.locationiq.com/v3/streets/vector.json?key=${mapKey}`;
 
-        olms.apply(map, styleJson);
+      // Initialize the map
+      const map = new ol.Map({
+        target: "map",
+        view: new ol.View({
+          center: ol.proj.fromLonLat([106.84513, -6.21462]), // Default to Jakarta
+          zoom: 12,
+        }),
+      });
+      olms.apply(map, styleJson);
 
-        // Fungsi untuk mengambil data dari API LocationIQ dan menampilkan hasil autocomplete
-        searchInput.addEventListener('input', function () {
-            const query = searchInput.value;
-            if (query.length > 2) {
-                fetch(`https://api.locationiq.com/v1/autocomplete?key=${apiKey}&q=${query}&limit=5&dedupe=1`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Hapus hasil autocomplete sebelumnya
-                        autocompleteResults.innerHTML = '';
-                        autocompleteResults.style.display = 'block';
-                        // Tampilkan hasil baru
-                        data.forEach(location => {
-                            const item = document.createElement('div');
-                            item.classList.add('autocomplete-item');
-                            item.textContent = location.display_name;
-                            item.addEventListener('click', () => {
-                                searchInput.value = location.display_name;
-                                autocompleteResults.style.display = 'none';
-                                document.getElementById('location-choosed').textContent = location.display_name;
-                            });
-                            autocompleteResults.appendChild(item);
-                        });
-                    })
-                    .catch(error => console.error('Error:', error));
-            } else {
-                autocompleteResults.style.display = 'none';
-            }
-        });
+      let routeLayer = null; // Layer to display the route
 
-        function searchLocation(query) {
-            fetch(`https://us1.locationiq.com/v1/search?key=${apiKey}&q=${encodeURIComponent(query)}&format=json`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.length > 0) {
-                        const location = data[0];
-                        const lat = parseFloat(location.lat);
-                        const lon = parseFloat(location.lon);
-                        const displayName = location.display_name;
+      function setupAutocomplete(input, resultsContainer) {
+        input.addEventListener("input", function () {
+          const query = input.value;
+          if (query.length > 2) {
+            fetch(
+              `https://api.locationiq.com/v1/autocomplete?key=${apiKey}&q=${query}&limit=5&dedupe=1`
+            )
+              .then((response) => response.json())
+              .then((data) => {
+                // Clear previous results
+                resultsContainer.innerHTML = "";
+                resultsContainer.style.display = "block";
 
-                        // Tampilkan informasi lokasi
-                        resultDiv.innerHTML = `
-                            <h3>Lokasi Ditemukan:</h3>
-                            <p>${displayName}</p>
-                            <p><strong>Latitude:</strong> ${lat}</p>
-                            <p><strong>Longitude:</strong> ${lon}</p>
-                        `;
-
-                        // Tampilkan peta menggunakan OpenLayers
-                        const view = map.getView();
-                        view.setCenter(ol.proj.fromLonLat([lon, lat]));
-                        view.setZoom(15);
-
-                        // Buat marker baru di posisi yang dicari
-                        const marker = new ol.Overlay({
-                            position: ol.proj.fromLonLat([lon, lat]),
-                            positioning: 'center-center',
-                            element: document.createElement('div'),
-                            stopEvent: false
-                        });
-                        marker.getElement().innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="red" class="bi bi-geo-alt" viewBox="0 0 16 16"><path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/><path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>`;
-                        map.addOverlay(marker);
-                    } else {
-                        resultDiv.innerHTML = '<p>Lokasi tidak ditemukan.</p>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                    resultDiv.innerHTML = '<p>Error mencari lokasi. Coba lagi nanti.</p>';
+                // Show new results
+                data.forEach((location) => {
+                  const item = document.createElement("div");
+                  item.classList.add("autocomplete-item");
+                  item.textContent = location.display_name;
+                  item.addEventListener("click", () => {
+                    input.value = location.display_name;
+                    resultsContainer.style.display = "none";
+                    input.dataset.lat = location.lat; // Store latitude
+                    input.dataset.lon = location.lon; // Store longitude
+                  });
+                  resultsContainer.appendChild(item);
                 });
-        }
-
-
-        searchButton.addEventListener('click', function() {
-            const query = searchInput.value;
-            if (query) {
-                searchLocation(query);
-            }
+              })
+              .catch((error) => console.error("Error:", error));
+          } else {
+            resultsContainer.style.display = "none";
+          }
         });
-    </script>
 
-</body>
+        // Hide autocomplete when clicking outside
+        document.addEventListener("click", function (e) {
+          if (
+            !input.contains(e.target) &&
+            !resultsContainer.contains(e.target)
+          ) {
+            resultsContainer.style.display = "none";
+          }
+        });
+      }
+
+      // Setup autocomplete for both pinpoint and destination inputs
+      setupAutocomplete(pinpointInput, pinpointAutocompleteResults);
+      setupAutocomplete(destinationInput, destinationAutocompleteResults);
+
+      // Function to get location coordinates based on search query
+      function searchLocation(query, callback) {
+        fetch(
+          `https://us1.locationiq.com/v1/search?key=${apiKey}&q=${encodeURIComponent(
+            query
+          )}&format=json`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            if (data && data.length > 0) {
+              const location = data[0];
+              callback({
+                lat: parseFloat(location.lat),
+                lon: parseFloat(location.lon),
+                name: location.display_name,
+              });
+            } else {
+              alert("Location not found.");
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching location data:", error);
+            alert("Error searching for location.");
+          });
+      }
+
+      // Function to get directions from the API and display on the map
+      function getDirections(start, end) {
+        const directionsUrl = `https://us1.locationiq.com/v1/directions/driving/${start.lon},${start.lat};${end.lon},${end.lat}?key=${apiKey}&steps=true&alternatives=true&geometries=geojson&overview=full`;
+
+        fetch(directionsUrl)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data && data.routes && data.routes.length > 0) {
+              const route = data.routes[0];
+
+              console.log("DATA <> " + JSON.stringify(route));
+
+              // Remove existing route layer if any
+              if (routeLayer) {
+                map.removeLayer(routeLayer);
+              }
+
+              // Create a new route layer
+              routeLayer = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                  features: [
+                    new ol.Feature({
+                      geometry: new ol.geom.LineString(
+                        route.geometry.coordinates
+                      ).transform("EPSG:4326", "EPSG:3857"),
+                    }),
+                  ],
+                }),
+                style: new ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                    color: "#FF0000",
+                    width: 3,
+                  }),
+                }),
+              });
+              map.addLayer(routeLayer);
+
+              // Zoom to route
+              map.getView().fit(routeLayer.getSource().getExtent(), {
+                padding: [50, 50, 50, 50],
+              });
+
+              const currentTime = new Date(); // Current date and time
+              const distanceInKilometer = (route.distance / 1000).toFixed(2); // Duration in minutes
+              const durationInMinutes = (route.duration / 60).toFixed(2); // Duration in minutes
+              const duration = route.duration; // Duration in seconds
+
+              // Calculate the estimated arrival time by adding the duration (in milliseconds) to the current time
+              const estimatedArrival = new Date(
+                currentTime.getTime() + duration * 1000
+              );
+
+              const formattedArrival = estimatedArrival.toLocaleTimeString(
+                "id-ID",
+                {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }
+              );
+
+              //   console.log("Estimated Arrival Time:", formattedArrival);
+
+              // Display route info
+              directionsResult.innerHTML = `
+              <h3>Ringkasan Rute:</h3>
+              <p><strong>Titik awal:</strong> ${pinpointInput.value} km</p>
+              <p><strong>Tujuan:</strong> ${destinationInput.value} km</p>
+              <p><strong>Jarak:</strong> ${distanceInKilometer} km</p>
+              <p><strong>Durasi:</strong> ${durationInMinutes} menit</p>
+              <p><strong>Estimasi Sampai:</strong> ${formattedArrival}</p>
+                <button id="add-trip" class="search-button">Mulai Perjalanan</button>
+            `;
+            } else {
+              directionsResult.innerHTML = "<p>No route found.</p>";
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching directions:", error);
+            directionsResult.innerHTML =
+              "<p>Failed to get directions. Try again later.</p>";
+          });
+      }
+
+      // Event listener for the "Get Directions" button
+      directionButton.addEventListener("click", function () {
+        const pinpointQuery = pinpointInput.value;
+        const destinationQuery = destinationInput.value;
+
+        if (pinpointQuery && destinationQuery) {
+          // Fetch coordinates for both pinpoint and destination
+          searchLocation(pinpointQuery, (pinpoint) => {
+            searchLocation(destinationQuery, (destination) => {
+              getDirections(pinpoint, destination);
+            });
+          });
+        } else {
+          alert("Please enter both pinpoint and destination.");
+        }
+      });
+    </script>
+  </body>
 </html>
