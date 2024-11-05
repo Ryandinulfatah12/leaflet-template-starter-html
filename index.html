@@ -212,17 +212,37 @@
       let routeLayer = null; // Layer to display the route
 
       function setupAutocomplete(input, resultsContainer) {
+        // Create a loading element
+        const loadingIndicator = document.createElement("div");
+        loadingIndicator.textContent = "Loading...";
+        loadingIndicator.classList.add("loading-indicator");
+        loadingIndicator.style.display = "none"; // Initially hidden
+        resultsContainer.appendChild(loadingIndicator);
+
         input.addEventListener("input", function () {
           const query = input.value;
           if (query.length > 2) {
+            // Show loading indicator
+            loadingIndicator.style.display = "block";
+            resultsContainer.innerHTML = ""; // Clear previous results
+            resultsContainer.style.display = "block";
+
             fetch(
               `https://api.locationiq.com/v1/autocomplete?key=${apiKey}&q=${query}&limit=5&dedupe=1`
             )
-              .then((response) => response.json())
+              .then((response) => {
+                // Handle 429 response
+                if (response.status === 429) {
+                  resultsContainer.innerHTML = "<div>Harap tunggu....</div>";
+                  loadingIndicator.style.display = "none"; // Hide loading indicator
+                  return Promise.reject("429 Too Many Requests");
+                }
+                return response.json();
+              })
               .then((data) => {
                 // Clear previous results
                 resultsContainer.innerHTML = "";
-                resultsContainer.style.display = "block";
+                loadingIndicator.style.display = "none"; // Hide loading indicator
 
                 // Show new results
                 data.forEach((location) => {
@@ -238,9 +258,15 @@
                   resultsContainer.appendChild(item);
                 });
               })
-              .catch((error) => console.error("Error:", error));
+              .catch((error) => {
+                if (error !== "429 Too Many Requests") {
+                  console.error("Error:", error);
+                }
+                loadingIndicator.style.display = "none"; // Hide loading indicator on error
+              });
           } else {
             resultsContainer.style.display = "none";
+            loadingIndicator.style.display = "none"; // Hide loading indicator
           }
         });
 
@@ -251,6 +277,7 @@
             !resultsContainer.contains(e.target)
           ) {
             resultsContainer.style.display = "none";
+            loadingIndicator.style.display = "none"; // Hide loading indicator
           }
         });
       }
